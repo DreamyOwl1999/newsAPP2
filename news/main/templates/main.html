@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row">
+    Username:
+    {{name}}
+    </div>
+
+    <div class="row">
+      <img src="{{profile_pic.url}}"  id = "image" width="200" height="200">
+    </div>
+
+      <div class="row">
+        </div>
+
+      <div class = "row">
+        <button id="del">Delete Picture</button>
+        </div>
+
+      <form  id="choices" enctype="multipart/form-data" method="POST">
+          {% csrf_token %}
+            {% for field in form %}
+            <div class="row">
+                {{ field|as_crispy_field }}
+            </div>
+            {% endfor %}
+            <input  type="submit" class="btn btn-primary"> </input>
+
+
+    </form>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+<script>
+
+  function get_pp(){
+    $.ajax({
+        type: 'GET',
+        url: "{% url 'get_pp' %}",
+        contentType: false,
+        processData: false,
+        success: function (response) {
+          console.log(response["pp"])
+          $("#image").replaceWith('<img src= '+ response["pp"]+ ' id = "image" width=\"200\" height=\"200\">')
+        }
+    });
+  }
+
+
+    $("#choices").submit(function (e) {
+      e.preventDefault();
+      var formData = new FormData(this);
+      $.ajax({
+          type: 'POST',
+          url: "{% url 'post_newsSection' %}",
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: function (response) {
+            get_pp();
+          }
+      });
+
+    });
+
+
+    $("#del").click(function (e) {
+      $.ajax({
+          type: 'POST',
+          url: "{% url 'delete_pp' %}",
+          data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+          success: function (response) {
+            get_pp();
+          }
+      });
+
+    });
+
+
+ </script>
+{% endblock javascript %}
